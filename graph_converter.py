@@ -1,11 +1,12 @@
 import numpy as np
-import sys
-sys.path.append('/home/master/models/syntaxnet/')
-import svo_extractor
+import sys, os
+sys.path.append(os.path.expanduser('~') + '/models/syntaxnet/')
+import tree_gen
 import networkx as nx
 import matplotlib.pyplot as plt
 from node2vec.src.model_maker import model_maker
 
+# TODO make a script to place svo_extractor into the syntaxnet directory
 class Args:
 	def __init__(self, graph):
 		self.graph = graph
@@ -47,7 +48,6 @@ for sent in tokenised_sents:
         new_sent.append(unique_dict[word])
     new_sents.append(new_sent)
 
-l = list(unique_words)
 
 def gen_graph(sentence):
 
@@ -118,11 +118,8 @@ limit = 150
 graphs = []
 for sent in sents[:limit]:
 	
-	result = svo_extractor.get_svo(sent)
-	parse_tree = result[3]
+	parse_tree = tree_gen.get_tree(sent)
 	graph = gen_graph(parse_tree)
-	#args = Args(graph)
-	#model = model_maker(args) 
 	# now time to concatenate all the graphs
 	graphs.append(graph)
 
