@@ -18,7 +18,11 @@ def visualize(model, output_path, G):
                 print("Emply Line, should replecaed by any thing else, or will cause a bug of tensorboard")
                 file_metadata.write("{0}".format('<Empty Line>').encode('utf-8') + b'\n')
             else:
+<<<<<<< HEAD
                 file_metadata.write("{0}".format(G.node[int(word)]['label']).encode('utf-8') + b'\n')
+=======
+                file_metadata.write("{0}".format(G.node[int(word)]['tag']).encode('utf-8') + b'\n')
+>>>>>>> 6bdef989ba7cc920c881996d87c92415dcaacdf5
 
     # define the model without training
     sess = tf.InteractiveSession()
