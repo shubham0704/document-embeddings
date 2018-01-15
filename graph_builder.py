@@ -1,14 +1,12 @@
 import numpy as np
 import sys, os
-sys.path.append(os.path.expanduser('~') + '/models/syntaxnet/')
-import tree_gen
+import dragnn_parser
 import networkx as nx
 import matplotlib.pyplot as plt
 from node2vec.src.model_maker import model_maker
 from tensor_visualize import visualize
 from sentence_loader import lazy_load
 from memory_profiler import profile
-#syntax_embeddings/cde-package/cde-root/home/master/Desktop/GIT/syntax_embeddings/document_embeddings/tree_gen1.py
 
 class Args:
 	
@@ -166,7 +164,8 @@ class GraphBuilder:
 		"""
 		takes a sentence as input return a graph
 		"""
-		parse_tree = tree_gen.get_tree(sent)
+		parser = dragnn_parser.SyntaxnetParser('../models/English')
+		parse_tree = parser.annotate_text(sent)
 		graph = self.gen_graph(parse_tree)
 		return graph
 
