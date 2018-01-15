@@ -6,7 +6,7 @@ RUN apt-get install -y ca-certificates gettext-base vim
 
 COPY ./ /document-embeddings
 RUN pip install -r /document-embeddings/requirements.txt
-RUN sudo apt-get install python-tk
+RUN apt-get install python-tk
 
 COPY ./models /models
 COPY custom_parse.sh /opt/tensorflow/models/syntaxnet/syntaxnet/
