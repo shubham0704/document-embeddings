@@ -1,10 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-# @Time    : 10/14/2016 2:00 PM
-# @Author  : Jiaming Li  (jiaminli@cisco.com)
-# @Site    : 
-# @File    : dragnn_parser.py
-# @Software: PyCharm
+
 import copy
 import os
 import pprint
@@ -28,8 +22,10 @@ from google.protobuf import text_format
 from syntaxnet import load_parser_ops  # This loads the actual op definitions
 from syntaxnet import sentence_pb2
 from syntaxnet.ops import gen_parser_ops
-from tensorflow.python.platform import tf_logging as logging
 
+from tensorflow.python.platform import tf_logging as logging
+os.environ["TF_CPP_MIN_LOG_LEVEL"]="3"
+logging.set_verbosity(logging.ERROR)
 
 class SyntaxnetParser(object):
     def __init__(self,model_folder, folder=config.syntaxnetFolder):
