@@ -8,7 +8,7 @@ from node2vec.src.model_maker import model_maker
 from tensor_visualize import visualize
 from sentence_loader import lazy_load
 from memory_profiler import profile
-
+#syntax_embeddings/cde-package/cde-root/home/master/Desktop/GIT/syntax_embeddings/document_embeddings/tree_gen1.py
 
 class Args:
 	
@@ -64,7 +64,7 @@ class GraphBuilder:
 	new_sents = []
 	unique_dict = {} # stores word, id pair
 	graphs = []
-	unique_words = {}
+	unique_words = {} # stores id, word pairs
 	sents = None
 	meta_paths = set()
 	giant_graph = nx.Graph()
@@ -278,6 +278,8 @@ if __name__ == '__main__':
 	##G.plot_graph(G.giant_graph)
 	args.graph = G.giant_graph
 	args.meta_paths = G.meta_paths
-	model = model_maker(args)
+	model = model_maker(args, G.unique_words)
+	#model.save('testing_ver1')	
+	#model.save('good_boy')
 	visualize(model, './output/', G.giant_graph)
 	

@@ -18,11 +18,8 @@ def visualize(model, output_path, G):
                 print("Emply Line, should replecaed by any thing else, or will cause a bug of tensorboard")
                 file_metadata.write("{0}".format('<Empty Line>').encode('utf-8') + b'\n')
             else:
-<<<<<<< HEAD
-                file_metadata.write("{0}".format(G.node[int(word)]['label']).encode('utf-8') + b'\n')
-=======
-                file_metadata.write("{0}".format(G.node[int(word)]['tag']).encode('utf-8') + b'\n')
->>>>>>> 6bdef989ba7cc920c881996d87c92415dcaacdf5
+                #file_metadata.write("{0}".format(G.node[int(word)]['label']).encode('utf-8') + b'\n')
+                file_metadata.write("{0}".format(word).encode('utf-8') + b'\n')
 
     # define the model without training
     sess = tf.InteractiveSession()
@@ -44,4 +41,9 @@ def visualize(model, output_path, G):
     saver.save(sess, os.path.join(output_path,'w2x_metadata.ckpt'))
     print('Run `tensorboard --logdir={0}` to run visualize result on tensorboard'.format(output_path))
 
+if __name__ == '__main__':
 
+    model = Word2Vec.load('/home/master/Desktop/GIT/syntax_embeddings/document_embeddings/testing_ver1')    
+    for i, word in enumerate(model.wv.index2word):
+        print i, word
+	break	
