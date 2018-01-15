@@ -6,6 +6,7 @@ RUN apt-get install -y ca-certificates gettext-base vim
 
 COPY ./ /document-embeddings
 RUN pip install -r /document-embeddings/requirements.txt
+RUN apt-get install blt libtcl8.6 libtk8.6 libxss1 tk8.6-blt2.5
 RUN apt-get install python-tk
 
 COPY ./models /models
