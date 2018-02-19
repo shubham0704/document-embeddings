@@ -1,6 +1,7 @@
 import numpy as np
 import sys, os
-import dragnn_parser
+sys.path.append(os.path.expanduser('~') + '/models/syntaxnet/')
+import tree_gen
 import networkx as nx
 import matplotlib.pyplot as plt
 from node2vec.src.model_maker import model_maker
@@ -9,11 +10,11 @@ from sentence_loader import lazy_load
 from memory_profiler import profile
 
 class Args:
-	
-	def __init__(self, graph=None, dimensions=100, walk_length=80, num_walks=10, 
+
+	def __init__(self, graph=None, dimensions=100, walk_length=80, num_walks=10,
 						window_size=10, iter=1, workers=8, p=1, q=1, weighted=0, directed=0, **extra_kwargs):
 		self.graph = graph
-		#self.input = './node2vec/graph/useful_sents.npy' 
+		#self.input = './node2vec/graph/useful_sents.npy'
 		self.input  = './node2vec/graph/sents.npy'
 		self.output = './node2vec/emb/emb.npy'
 		self.dimensions = dimensions
@@ -28,7 +29,7 @@ class Args:
 		self.directed = directed
 		self.meta_paths = None
 
-	
+
 	def __str__(self):
 		return """printing initialized args list -
 					input: {0}
@@ -36,7 +37,7 @@ class Args:
 					dimensions: {2}
 					walk_length: {3}
 					num_walks: {4}
-					window_size: {5} 
+					window_size: {5}
 					iter: {6}
 					workers: {7}
 					p: {8}
@@ -55,15 +56,15 @@ class Args:
 						 self.q,
 						 self.graph,
 						 self.meta_paths
-						) 
-		
+						)
+
 class GraphBuilder:
-	
+
 	new_sents = []
 	unique_dict = {} # stores word, id pair
 	graphs = []
 	unique_words = {} # stores id, word pairs
-	sents = None
+	sents = []
 	meta_paths = set()
 	giant_graph = nx.Graph()
 	done = 0
@@ -71,16 +72,18 @@ class GraphBuilder:
 
 	def __init__(self, limit=150):
 		self.limit = limit
-		
-	
-	def gen_data(self, sents=None):
+
+
+	def gen_data(self, sents=None, tokenised_sents=None):
 		"""
 		populates the vocabulary and initializes all class variables
 		"""
-		if sents:
-			tokenised_sents = [[word for word in sent.split()] for sent in sents]
+		if sents and tokenised_sents:
+			#tokenised_sents = [[word for word in sent.split()] for sent in sents]
+			self.sents.extend(sents)
 		else:
-			tokenised_sents, self.sents = lazy_load()
+			tokenised_sents, sents = lazy_load()
+			self.sents.extend(sents)
 			if not tokenised_sents:
 				self.done = 1
 		for sent in tokenised_sents:
@@ -110,7 +113,7 @@ class GraphBuilder:
 			# TODO -  change token.word to token.label
 			# graph.add_node(node_id, label=token.word, tag=token.label)
 			graph.add_node(node_id, {'label':token.word, 'tag':token.label})
-			
+
 			# for each sentence extract the inner grammatical structure
 			path.append(token.label)
 
@@ -134,10 +137,10 @@ class GraphBuilder:
 				glob_graph.add_node(node_id, {'label':graph.node[node]['label'], 'tag':graph.node[node]['tag']})
 			except:
 				pass
-				
+
 		for edge in graph.edges():
 			try:
-				src_id = self.unique_dict[graph.node[edge[0]]['label']]        
+				src_id = self.unique_dict[graph.node[edge[0]]['label']]
 				node_id = self.unique_dict[graph.node[edge[1]]['label']]
 				glob_graph.add_edge(
 					  src_id,
@@ -146,42 +149,41 @@ class GraphBuilder:
 			except:
 				pass
 		return glob_graph
-		
-	@profile	
+
+	@profile
 	def gen_giant_graph(self):
-		
+
 		"""
-		generate sentence graphs and concatenate them 
+		generate sentence graphs and concatenate them
 		"""
 		sents = self.sents
 		for sent in self.sents:
 			self.giant_graph = nx.compose(self.get_graph(sent), self.giant_graph)
 
-		
+
 
 	def get_graph(self, sent):
 
 		"""
 		takes a sentence as input return a graph
 		"""
-		parser = dragnn_parser.SyntaxnetParser('../models/English')
-		parse_tree = parser.annotate_text(sent)
+		parse_tree = tree_gen.get_tree(sent)
 		graph = self.gen_graph(parse_tree)
 		return graph
 
 
-	
+
 	def get_embeddings(self, model, dims):
-		
+
 		sent_embeddings = []
 		for sent in self.new_sents[:self.limit]:
 			emb = np.zeros((dims, 1))
 			for word in sent:
 				try:
-					emb += model[str(word)].reshape((-1, 1))			
+					emb += model[str(word)].reshape((-1, 1))
 				except:
 					pass
-					#print str(word), unique_words[word], 'not found in model vocab'	
+					#print str(word), unique_words[word], 'not found in model vocab'
 			sent_embeddings.append(emb)
 		return sent_embeddings
 		#np.save(args.output, sent_embeddings)
@@ -211,7 +213,7 @@ class GraphBuilder:
 	   #      node_id = i
 	   #      node_dict[node_id] = token.word
 	   #      graph.add_node(self.unique_dict[token.word], label=token.word)
-	        
+
 	   #      if token.head >= 0:
 				# src_id = token.head
 				# graph.add_edge(
@@ -223,7 +225,7 @@ class GraphBuilder:
 
 	def gen_data_one(self, sentence):
 
-		
+
 		# sent = [word for word in sentence.split()]
 
 		# for word in sent:
@@ -262,7 +264,7 @@ def test_tree_build(s):
 
 
 if __name__ == '__main__':
-	
+
 	argList = [None]
 	args = Args(argList)
 	G = GraphBuilder()
@@ -278,7 +280,6 @@ if __name__ == '__main__':
 	args.graph = G.giant_graph
 	args.meta_paths = G.meta_paths
 	model = model_maker(args, G.unique_words)
-	#model.save('testing_ver1')	
+	#model.save('testing_ver1')
 	#model.save('good_boy')
 	visualize(model, './output/', G.giant_graph)
-	
